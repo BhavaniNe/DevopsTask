@@ -1,0 +1,6 @@
+---
+- name: Create mysql group
+  group:
+    name: mysql
+    state: present
+

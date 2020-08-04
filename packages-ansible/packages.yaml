@@ -1,0 +1,60 @@
+---
+- name: Install Telnet firewalld nslookup curl
+  hosts:  host 
+  become: yes
+  tasks:
+   
+    - name: Install firewalld
+      become: yes
+      package:
+         name: firewalld
+         state: latest
+
+    - name: Start and set up firewalld
+      become: yes
+      service:
+          name: firewalld
+          enabled: yes
+          state: started
+
+    - name: Install some of the packages
+      yum:
+         name: "{{ packages }}"
+         state: present
+      vars:
+        packages:
+             - telnet
+             - telnet-server
+             - bind-utils
+             - curl
+             - dnf
+
+    - name: Update firewall rules
+      become: yes
+      firewalld:
+               zone: public
+               service: telnet
+               permanent: yes
+               state: enabled 
+      notify: restart firewalld
+
+
+    - name: Start and enable telnet
+      service:
+         name: telnet.socket
+         state: started
+         enabled: yes
+
+    - name: Install Oracle Java 8 
+      yum:
+        name: java-1.8.0-openjdk-devel
+        state: present
+
+            
+  handlers:
+        - name: restart firewalld
+          become: yes
+          service:
+             name: firewalld
+             state: restarted    
+   

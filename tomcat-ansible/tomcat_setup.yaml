@@ -1,0 +1,18 @@
+---
+- hosts: host
+  become: yes
+  vars:
+    tomcat_archive_url: https://apachemirror.sg.wuchna.com/tomcat/tomcat-9/v{{ tomcat_ver }}/bin/apache-tomcat-{{ tomcat_ver }}.tar.gz
+    tomcat_archive_dest: /tmp/apache-tomcat-{{ tomcat_ver }}.tar.gz
+    tomcat_ver: 9.0.37
+    Java_home: /usr/lib/jvm/java-1.8.0-openjdk/bin/java
+    owner : centos
+    group : centos   
+    ui_manager_user: manager                    # User who can access the UI manager section only
+    ui_manager_pass: SP@ssw0rd      # UI manager user password
+    ui_admin_username: admin                    # User who can access bpth manager and admin UI sections
+    ui_admin_pass: SP@ssw0rd          # UI admin password
+  tasks:
+      - include: "tasks/main.yaml"
+
+

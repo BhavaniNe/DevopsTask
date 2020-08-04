@@ -1,0 +1,24 @@
+---
+- name: Configure remote machines
+  hosts: host
+  become: yes
+  gather_facts: yes
+  vars:
+     user_name: centos
+     ansible_ip : 54.179.140.135
+     dbname : employ
+     passwd_mysql_root : Admin@123
+     passwd_mysql_app_user : Admin@123
+  tasks:
+
+   - name: Include tasks for packages installation on specific distribution
+     include_tasks: "tasks/packages/centos.yaml"
+
+   - name: Include common tasks for configuration
+     include_tasks: "tasks/packages/common.yaml"
+
+   - name: Include tasks for MySQL server installation on specific distributions
+     include_tasks: "tasks/mysql/centos.yaml"
+  
+   - name: Include common tasks for MySQL server configuration
+     include_tasks: "tasks/mysql/common.yaml"

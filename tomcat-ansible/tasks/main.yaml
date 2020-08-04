@@ -1,0 +1,79 @@
+---
+    - name: Add EPEL repository
+      yum:
+         name: epel-release
+         state: present
+
+    - name: Install basic packages
+      package:
+         name: ['vim','bash-completion','tmux','tree','htop','wget','unzip','curl','git']
+         state: present
+
+    - name: Install  Java 8 
+      yum:
+        name: java-1.8.0-openjdk-devel
+        state: present
+
+    - shell: echo JAVA_HOME is $JAVA_HOME
+      environment:
+          JAVA_HOME:"{{ Java_home }}"
+      register: shellout
+    - debug: var=shellout
+
+
+    - name: Download Tomcat
+      get_url:
+           url: "{{ tomcat_archive_url }}"
+           dest: "{{ tomcat_archive_dest }}"
+
+
+
+    - name: Create a tomcat directory
+      file:
+         path: /usr/share/tomcat
+         state: directory
+         owner: "{{ owner }}"
+         group: "{{ group }}"
+
+    - name: Extract tomcat archive
+      unarchive:
+          src: "{{ tomcat_archive_dest }}"
+          dest: /usr/share/tomcat
+          remote_src: yes
+          owner: "{{ owner }}"
+          group: "{{ group }}"
+          extra_opts: "--strip-components=1"
+          creates: /usr/share/tomcat/bin
+    
+    - name: Set UI access credentials
+      template:
+          src: tomcat-users.xml.j2
+          dest: /usr/share/tomcat/conf/tomcat-users.xml
+ 
+
+    - name: Allow access to Manager and Host Manager apps from any IP
+      template:
+         src: context.xml.j2 
+         dest: "{{ item }}"
+      with_items:
+               - /usr/share/tomcat/webapps/host-manager/META-INF/context.xml
+               - /usr/share/tomcat/webapps/manager/META-INF/context.xml
+  
+  
+    - name: Starting tomcat
+      shell: nohup /usr/share/tomcat/bin/startup.sh &   
+
+    - name: Start and enable firewalld
+      service:
+         name: firewalld
+         state: started
+         enabled: yes
+      
+
+    - name: Open tomcat port on the firewall
+      firewalld:
+          port: 8080/tcp
+          permanent: true
+          state: enabled
+          immediate: yes
+      when: ansible_service_mgr == "systemd"
